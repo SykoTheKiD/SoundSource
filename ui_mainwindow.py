@@ -1,26 +1,13 @@
 # -*- coding: utf-8 -*-
 
-################################################################################
-## Form generated from reading UI file 'MainWindow.ui'
-##
-## Created by: Qt User Interface Compiler version 6.2.3
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
-
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt, QSortFilterProxyModel)
-from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
-    QCursor, QFont, QFontDatabase, QGradient,
-    QIcon, QImage, QKeySequence, QLinearGradient,
-    QPainter, QPalette, QPixmap, QRadialGradient,
-    QTransform)
-from PySide6.QtWidgets import (QApplication, QHeaderView, QLabel, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QProgressBar,
-    QSizePolicy, QStatusBar, QTableView, QVBoxLayout,
+from PySide6.QtCore import (QCoreApplication,
+    QMetaObject, QRect,
+    QSize, Qt, QSortFilterProxyModel)
+from PySide6.QtGui import (QAction)
+from PySide6.QtWidgets import (QHeaderView, QLabel, QLineEdit,
+    QMenu, QMenuBar, QProgressBar,
+    QStatusBar, QTableView, QVBoxLayout,
     QWidget)
-from PySide6 import QtCore
 
 class Ui_mainWindow(object):
     def __init__(self) -> None:
@@ -112,7 +99,6 @@ class Ui_mainWindow(object):
         QMetaObject.connectSlotsByName(mainWindow)
     # setupUi
 
-    # @QtCore.pyqtSlot('QItemSelection', 'QItemSelection')
     def on_selectionChanged(self, selected, deselected):
         print("selected: ")
         for ix in selected.indexes():
@@ -147,19 +133,3 @@ class Ui_mainWindow(object):
         self.menuFile.setTitle(QCoreApplication.translate("mainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("mainWindow", u"Help", None))
         self.menuOptions.setTitle(QCoreApplication.translate("mainWindow", u"Options", None))
-    # retranslateUi
-
-# import sys
-# from PySide6 import QtWidgets
-
-# class MainWindow(QtWidgets.QMainWindow, Ui_mainWindow):
-#     def __init__(self):
-#         super(MainWindow, self).__init__()
-#         self.setupUi(self)
-
-
-# app = QtWidgets.QApplication(sys.argv)
-
-# window = MainWindow()
-# window.show()
-# app.exec_()
