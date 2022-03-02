@@ -7,9 +7,12 @@ class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, data):
         super(TableModel, self).__init__()
         self._data = data
-        self.setHeaderData(0, Qt.Horizontal, "Library")
-        self.setHeaderData(1, Qt.Horizontal, "Category")
-        self.setHeaderData(2, Qt.Horizontal, "Sample")
+    
+    def flags(self, index) -> Qt.ItemFlags:
+        flags = super().flags(index)
+        if index.isValid():
+            flags |= Qt.ItemIsDragEnabled
+        return flags
 
     def data(self, index, role):
         row = index.row()
@@ -22,6 +25,7 @@ class TableModel(QtCore.QAbstractTableModel):
                 return sampleFile.category
             else:
                 return sampleFile.sample
+    
 
     def rowCount(self, index):
         return len(self._data)

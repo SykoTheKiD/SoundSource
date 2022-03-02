@@ -1,39 +1,22 @@
 # -*- coding: utf-8 -*-
 
 from PySide6.QtCore import (QCoreApplication,
-    QMetaObject, QRect,
-    QSize, Qt, QSortFilterProxyModel)
-from PySide6.QtGui import (QAction)
+    QMetaObject, QRect, QUrl,
+    QSize, Qt, QSortFilterProxyModel, Signal)
+from PySide6.QtGui import (QAction, QDrag)
 from PySide6.QtWidgets import (QHeaderView, QLabel, QLineEdit,
     QMenu, QMenuBar, QProgressBar,
     QStatusBar, QTableView, QVBoxLayout,
     QWidget, QAbstractItemView)
 
 class SampleLibraryTableView(QTableView):
+    dragSignal = Signal(object)
     def __init__(self, parent = None) -> None:
         super(SampleLibraryTableView, self).__init__(parent)
-        self.setAcceptDrops(True)
-        self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
-        self.setDropIndicatorShown(True)
     
     def startDrag(self, event):
-        print("sat")
-        super().startDrag(event)
-    
-    def dragEnterEvent(self, event):
-        print("dragged!")
-        event.accept()
-
-    def dragLeaveEvent(self, event):
-        print("jeff")
-        event.accept()
-    
-    def dragMoveEvent(self, event) -> None:
-        print("Drake")
-        event.accept()
-
-
+        self.dragSignal.emit(event)
 class Ui_mainWindow(object):
     def __init__(self) -> None:
         self.sampleTableView = None
@@ -94,7 +77,6 @@ class Ui_mainWindow(object):
 
         self.mainLayout.addWidget(self.progressBar)
 
-
         self.verticalLayout_5.addLayout(self.mainLayout)
 
         mainWindow.setCentralWidget(self.centralwidget)
@@ -127,9 +109,23 @@ class Ui_mainWindow(object):
         QMetaObject.connectSlotsByName(mainWindow)
     # setupUi
 
-    def on_selectionChanged(self, selected, deselected):
-        print("selected: ")
-        print(self.model._data[selected.indexes()[0].row()].filePath)
+    def processDrag(self, event):
+        indexes = self.sampleTableView.selectedIndexes()
+        row = indexes[0].row()
+        if row < len(self.model._data):
+            print(self.model._data[row].filePath)
+            drag = QDrag(self)
+            mime = self.sampleTableView.model().mimeData(indexes)
+            urlList = []
+            urlList.append(QUrl.fromLocalFile(self.model._data[row].filePath))
+            mime.setUrls(urlList)
+            drag.setMimeData(mime)
+            drag.exec_(event)
+
+    def on_selectionChanged(self, selected, _):
+        row = selected.indexes()[0].row()
+        if row < len(self.model._data):
+            print(self.model._data[row].filePath)
 
     def setTableViewModel(self, model):
         self.proxy_model = QSortFilterProxyModel()
@@ -142,6 +138,7 @@ class Ui_mainWindow(object):
         selection_model = self.sampleTableView.selectionModel()
         selection_model.selectionChanged.connect(self.on_selectionChanged)
         self.searchField.textChanged.connect(self.proxy_model.setFilterFixedString)
+        self.sampleTableView.dragSignal.connect(self.processDrag)
 
     def retranslateUi(self, mainWindow):
         mainWindow.setWindowTitle(QCoreApplication.translate("mainWindow", u"SoundSource", None))
