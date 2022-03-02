@@ -7,7 +7,32 @@ from PySide6.QtGui import (QAction)
 from PySide6.QtWidgets import (QHeaderView, QLabel, QLineEdit,
     QMenu, QMenuBar, QProgressBar,
     QStatusBar, QTableView, QVBoxLayout,
-    QWidget)
+    QWidget, QAbstractItemView)
+
+class SampleLibraryTableView(QTableView):
+    def __init__(self, parent = None) -> None:
+        super(SampleLibraryTableView, self).__init__(parent)
+        self.setAcceptDrops(True)
+        self.setDragEnabled(True)
+        self.setDragDropMode(QAbstractItemView.DragOnly)
+        self.setDropIndicatorShown(True)
+    
+    def startDrag(self, event):
+        print("sat")
+        super().startDrag(event)
+    
+    def dragEnterEvent(self, event):
+        print("dragged!")
+        event.accept()
+
+    def dragLeaveEvent(self, event):
+        print("jeff")
+        event.accept()
+    
+    def dragMoveEvent(self, event) -> None:
+        print("Drake")
+        event.accept()
+
 
 class Ui_mainWindow(object):
     def __init__(self) -> None:
@@ -45,8 +70,11 @@ class Ui_mainWindow(object):
 
         self.mainLayout.addWidget(self.searchField)
 
-        self.sampleTableView = QTableView(self.centralwidget)
+        self.sampleTableView = SampleLibraryTableView(self.centralwidget)
         self.sampleTableView.setObjectName(u"sampleTableView")
+        
+        self.sampleTableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.sampleTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.sampleTableView.horizontalHeader().setStretchLastSection(True) 
         self.sampleTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.sampleTableView.horizontalHeader().setHighlightSections(False)
@@ -101,19 +129,15 @@ class Ui_mainWindow(object):
 
     def on_selectionChanged(self, selected, deselected):
         print("selected: ")
-        for ix in selected.indexes():
-            print(selected.indexes()[0].siblingAtColumn(0).data())
-            print(ix.data())
-
-        print("deselected: ")
-        for ix in deselected.indexes():
-            print(ix.data())
+        print(self.model._data[selected.indexes()[0].row()].filePath)
 
     def setTableViewModel(self, model):
         self.proxy_model = QSortFilterProxyModel()
         self.proxy_model.setFilterKeyColumn(-1) # Search all columns.
         self.proxy_model.setSourceModel(model)
         self.proxy_model.sort(0, Qt.AscendingOrder)
+        self.model = model
+        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.sampleTableView.setModel(self.proxy_model)
         selection_model = self.sampleTableView.selectionModel()
         selection_model.selectionChanged.connect(self.on_selectionChanged)
