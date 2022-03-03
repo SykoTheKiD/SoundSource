@@ -1,6 +1,6 @@
 import sys
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QDialog
 from ui_mainwindow import Ui_mainWindow
 from manageLibrariesDialog import Ui_ManageFoldersDialog
@@ -36,11 +36,12 @@ class TableModel(QtCore.QAbstractTableModel):
         return 3
     
 class SampleFile:
-    def __init__(self, library, sample, filePath, category="-") -> None:
+    def __init__(self, library, sample, filePath, libraryPath, category="-") -> None:
         self.library = library
         self.category = category
         self.sample = sample
         self.filePath = filePath
+        self.libraryPath = libraryPath
 
 data = [
 SampleFile("jim", "jones", "capo", "path1"),
@@ -61,12 +62,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_mainWindow):
     
     def launchManageLibrariesDialog(self):
         dlg = ManageLibrariesDialog();
+        dlg.closeSignal.connect(self.addLibraries)
         dlg.exec()
+    
+    def addLibraries(self, libraries):
+        print(libraries)
 
 class ManageLibrariesDialog(QtWidgets.QDialog, Ui_ManageFoldersDialog):
+    closeSignal = Signal(object)
     def __init__(self) -> None:
         super(ManageLibrariesDialog, self).__init__()
         self.setupUi(self)
+    
+    def closeEvent(self, event):
+        self.closeSignal.emit(self.currentLibraries)
+        event.accept()
 
 app = QtWidgets.QApplication(sys.argv)
 
