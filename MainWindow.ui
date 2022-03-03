@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>mainWindow</class>
- <widget class="QMainWindow" name="mainWindow">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -119,7 +119,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionAdd_Directory">
    <property name="text">
-    <string>Add Directory</string>
+    <string>Manage Libraries</string>
    </property>
   </action>
   <action name="actionOptions">

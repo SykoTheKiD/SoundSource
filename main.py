@@ -1,7 +1,9 @@
 import sys
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog
 from ui_mainwindow import Ui_mainWindow
+from manageLibrariesDialog import Ui_ManageFoldersDialog
 
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, data):
@@ -55,6 +57,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_mainWindow):
         super(MainWindow, self).__init__()
         self.setupUi(self)
         self.setTableViewModel(model)
+        self.actionAdd_Directory.triggered.connect(self.launchManageLibrariesDialog)
+    
+    def launchManageLibrariesDialog(self):
+        dlg = ManageLibrariesDialog();
+        dlg.exec()
+
+class ManageLibrariesDialog(QtWidgets.QDialog, Ui_ManageFoldersDialog):
+    def __init__(self) -> None:
+        super(ManageLibrariesDialog, self).__init__()
+        self.setupUi(self)
 
 app = QtWidgets.QApplication(sys.argv)
 
