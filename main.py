@@ -16,18 +16,20 @@ class TableModel(QtCore.QAbstractTableModel):
 
     def processLibraries(self, libraries):
         ret = []
+        audio_regex = re.compile(r'.mp3|.wav|.flac|.midi')
         for library in libraries:
-            for (dirpath, dirnames, filenames) in os.walk(library):
+            for (dirpath, _, filenames) in os.walk(library):
                 for file in filenames:
-                    path = os.path.join(dirpath, file)
-                    path = re.sub(library + "/", "", path)
-                    pathParts = path.split("/")
-                    if len(pathParts) > 1:
-                        libraryName = pathParts[0]
-                        category = "/".join(pathParts[:-1])
-                        sampleName = file.split('.')[0]
-                        sample = SampleFile(library=libraryName, sample=sampleName, filePath=path, libraryPath=library, category=category)
-                        ret.append(sample)
+                    if audio_regex.search(file):
+                        path = os.path.join(dirpath, file)
+                        path = re.sub(library + "/", "", path)
+                        pathParts = path.split("/")
+                        if len(pathParts) > 1:
+                            libraryName = pathParts[0]
+                            category = "/".join(pathParts[:-1])
+                            sampleName = file.split('.')[0]
+                            sample = SampleFile(library=libraryName, sample=sampleName, filePath=path, libraryPath=library, category=category)
+                            ret.append(sample)
         return ret
 
 
@@ -66,7 +68,7 @@ class SampleFile:
     def __repr__(self) -> str:
         return self.library + " " + self.category + " " + self.sample
 
-data = ["/Users//Downloads/son"]
+data = ["/Users/jarushaan/Downloads/son"]
 
 model = TableModel(data)
 
