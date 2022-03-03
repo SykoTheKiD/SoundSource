@@ -1,15 +1,36 @@
 import sys
+from unicodedata import category
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QDialog
 from ui_mainwindow import Ui_mainWindow
 from manageLibrariesDialog import Ui_ManageFoldersDialog
-
+import os
+import re
 class TableModel(QtCore.QAbstractTableModel):
-    def __init__(self, data):
+    def __init__(self, libraries):
         super(TableModel, self).__init__()
+        self.libraries = libraries
+        data = self.processLibraries(libraries)
         self._data = data
-    
+
+    def processLibraries(self, libraries):
+        ret = []
+        for library in libraries:
+            for (dirpath, dirnames, filenames) in os.walk(library):
+                for file in filenames:
+                    path = os.path.join(dirpath, file)
+                    path = re.sub(library + "/", "", path)
+                    pathParts = path.split("/")
+                    if len(pathParts) > 1:
+                        libraryName = pathParts[0]
+                        category = "/".join(pathParts[:-1])
+                        sampleName = file.split('.')[0]
+                        sample = SampleFile(library=libraryName, sample=sampleName, filePath=path, libraryPath=library, category=category)
+                        ret.append(sample)
+        return ret
+
+
     def flags(self, index) -> Qt.ItemFlags:
         flags = super().flags(index)
         if index.isValid():
@@ -28,7 +49,6 @@ class TableModel(QtCore.QAbstractTableModel):
             else:
                 return sampleFile.sample
     
-
     def rowCount(self, index):
         return len(self._data)
 
@@ -42,14 +62,11 @@ class SampleFile:
         self.sample = sample
         self.filePath = filePath
         self.libraryPath = libraryPath
+    
+    def __repr__(self) -> str:
+        return self.library + " " + self.category + " " + self.sample
 
-data = [
-SampleFile("jim", "jones", "capo", "path1"),
-SampleFile("drizzy", "drake", "dre", "path2"),
-SampleFile("abel", "abe", "test", "path3"),
-SampleFile("tess", "jimmy", "cartman", "path4"),
-SampleFile("carter", "capol", "draker", "path5"),
-]
+data = ["/Users//Downloads/son"]
 
 model = TableModel(data)
 

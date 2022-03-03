@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (QHeaderView, QLabel, QLineEdit,
     QMenu, QMenuBar, QProgressBar,
     QStatusBar, QTableView, QVBoxLayout,
     QWidget, QAbstractItemView)
+import os
 
 class SampleLibraryTableView(QTableView):
     dragSignal = Signal(object)
@@ -125,7 +126,7 @@ class Ui_mainWindow(object):
     def on_selectionChanged(self, selected, _):
         row = selected.indexes()[0].row()
         if row < len(self.model._data):
-            print(self.model._data[row].filePath)
+            print(os.path.join(self.model._data[row].libraryPath, self.model._data[row].filePath))
 
     def setTableViewModel(self, model):
         self.proxy_model = QSortFilterProxyModel()
