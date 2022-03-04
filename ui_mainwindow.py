@@ -4,7 +4,7 @@ from PySide6.QtCore import (QCoreApplication,
     QMetaObject, QRect, QUrl,
     QSize, Qt, QSortFilterProxyModel, Signal)
 from PySide6.QtGui import (QAction, QDrag)
-from PySide6.QtWidgets import (QHeaderView, QLabel, QLineEdit,
+from PySide6.QtWidgets import (QLabel, QLineEdit,
     QMenu, QMenuBar, QProgressBar,
     QStatusBar, QTableView, QVBoxLayout,
     QWidget, QAbstractItemView)
@@ -18,6 +18,32 @@ class SampleLibraryTableView(QTableView):
     
     def startDrag(self, event):
         self.dragSignal.emit(event)
+
+class CustomQueryFilterModel(QSortFilterProxyModel):
+    def __init__(self, parent=None) -> None:
+        super(CustomQueryFilterModel, self).__init__(parent)
+        self.queryString = None
+    
+    def setFilterFixedString(self, pattern: str) -> None:
+        self.queryString = pattern.lower()
+        return super().setFilterFixedString(pattern)
+    
+    def filterAcceptsRow(self, source_row, source_parent) -> bool:
+        if self.queryString is None:
+            return True
+        queryParts = self.queryString.split(" ")
+        library_index = self.sourceModel().index(source_row, 0, source_parent)
+        category_index = self.sourceModel().index(source_row, 1, source_parent)
+        sample_index = self.sourceModel().index(source_row, 2, source_parent)
+        for queryPart in queryParts:
+            if not (
+                queryPart in self.sourceModel().data(library_index, Qt.ItemDataRole.DisplayRole).lower() or
+                queryPart in self.sourceModel().data(category_index, Qt.ItemDataRole.DisplayRole).lower() or
+                queryPart in self.sourceModel().data(sample_index, Qt.ItemDataRole.DisplayRole).lower()):
+                return False
+        return True
+
+        
 class Ui_mainWindow(object):
     def __init__(self) -> None:
         self.sampleTableView = None
@@ -60,9 +86,7 @@ class Ui_mainWindow(object):
         self.sampleTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.sampleTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.sampleTableView.horizontalHeader().setStretchLastSection(True) 
-        self.sampleTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.sampleTableView.horizontalHeader().setHighlightSections(False)
-        self.sampleTableView.horizontalHeader().setProperty("showSortIndicator", True)
         self.sampleTableView.verticalHeader().setVisible(False)
 
         self.mainLayout.addWidget(self.sampleTableView)
@@ -129,7 +153,7 @@ class Ui_mainWindow(object):
             print(os.path.join(self.model._data[row].libraryPath, self.model._data[row].filePath))
 
     def setTableViewModel(self, model):
-        self.proxy_model = QSortFilterProxyModel()
+        self.proxy_model = CustomQueryFilterModel()
         self.proxy_model.setFilterKeyColumn(-1) # Search all columns.
         self.proxy_model.setSourceModel(model)
         self.proxy_model.sort(0, Qt.AscendingOrder)

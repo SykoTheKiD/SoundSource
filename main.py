@@ -1,8 +1,6 @@
 import sys
-from unicodedata import category
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QDialog
 from ui_mainwindow import Ui_mainWindow
 from manageLibrariesDialog import Ui_ManageFoldersDialog
 import os
@@ -13,6 +11,13 @@ class TableModel(QtCore.QAbstractTableModel):
         self.libraries = libraries
         data = self.processLibraries(libraries)
         self._data = data
+
+    def headerData(self, index, QtOrientation, role=None):
+        if role == Qt.DisplayRole and QtOrientation==Qt.Horizontal:
+            header = ['Library', 'Category', 'Sample']
+            return header[index]
+        else:
+            return QtCore.QAbstractTableModel.headerData(self, index, QtOrientation, role)
 
     def processLibraries(self, libraries):
         ret = []
@@ -26,7 +31,7 @@ class TableModel(QtCore.QAbstractTableModel):
                         pathParts = path.split("/")
                         if len(pathParts) > 1:
                             libraryName = pathParts[0]
-                            category = "/".join(pathParts[:-1])
+                            category = "/".join(pathParts[1:-1])
                             sampleName = file.split('.')[0]
                             sample = SampleFile(library=libraryName, sample=sampleName, filePath=path, libraryPath=library, category=category)
                             ret.append(sample)
@@ -68,7 +73,7 @@ class SampleFile:
     def __repr__(self) -> str:
         return self.library + " " + self.category + " " + self.sample
 
-data = ["/Users/jarushaan/Downloads/son"]
+data = ["/Users//Downloads/son"]
 
 model = TableModel(data)
 
