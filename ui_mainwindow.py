@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from operator import index
 from PySide6.QtCore import (QCoreApplication,
     QMetaObject, QRect, QUrl,
     QSize, Qt, QSortFilterProxyModel, Signal)
@@ -9,6 +10,7 @@ from PySide6.QtWidgets import (QLabel, QLineEdit,
     QStatusBar, QTableView, QVBoxLayout,
     QWidget, QAbstractItemView)
 import os
+from audioplayer import AudioPlayer
 
 class SampleLibraryTableView(QTableView):
     dragSignal = Signal(object)
@@ -131,6 +133,9 @@ class Ui_mainWindow(object):
 
         self.retranslateUi(mainWindow)
 
+        self.audioplayer = None
+        self.playAudio = True
+
         QMetaObject.connectSlotsByName(mainWindow)
     # setupUi
 
@@ -138,7 +143,6 @@ class Ui_mainWindow(object):
         indexes = self.sampleTableView.selectedIndexes()
         row = indexes[0].row()
         if row < len(self.model._data):
-            print(self.model._data[row].filePath)
             drag = QDrag(self)
             mime = self.sampleTableView.model().mimeData(indexes)
             urlList = []
@@ -147,10 +151,16 @@ class Ui_mainWindow(object):
             drag.setMimeData(mime)
             drag.exec_(event)
 
-    def on_selectionChanged(self, selected, _):
-        row = selected.indexes()[0].row()
+    def on_selectionChanged(self, row, des):
+        selected = self.proxy_model.mapToSource(row)
+        row = selected.row()
         if row < len(self.model._data):
-            print(os.path.join(self.model._data[row].libraryPath, self.model._data[row].filePath))
+            if self.playAudio:
+                if self.audioplayer is not None:
+                    self.audioplayer.stop()
+                self.audioplayer = AudioPlayer(os.path.join(self.model._data[row].libraryPath, self.model._data[row].filePath))
+                self.audioplayer.play()
+
 
     def setTableViewModel(self, model):
         self.proxy_model = CustomQueryFilterModel()
@@ -161,9 +171,17 @@ class Ui_mainWindow(object):
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.sampleTableView.setModel(self.proxy_model)
         selection_model = self.sampleTableView.selectionModel()
-        selection_model.selectionChanged.connect(self.on_selectionChanged)
+        selection_model.currentChanged.connect(self.on_selectionChanged)
         self.searchField.textChanged.connect(self.proxy_model.setFilterFixedString)
+        self.searchField.textChanged.connect(self.disconnect_audio)
+        self.searchField.editingFinished.connect(self.connect_audio)
         self.sampleTableView.dragSignal.connect(self.processDrag)
+    
+    def disconnect_audio(self):
+        self.playAudio = False
+    
+    def connect_audio(self):
+        self.playAudio = True
 
     def retranslateUi(self, mainWindow):
         mainWindow.setWindowTitle(QCoreApplication.translate("mainWindow", u"SoundSource", None))

@@ -65,6 +65,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="stopPlayback">
+        <property name="text">
+         <string>Stop</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="messageLabel">
         <property name="text">
          <string>TextLabel</string>
